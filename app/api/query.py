@@ -13,8 +13,9 @@ router = APIRouter(prefix="", tags=["rag"])
 pipeline = RAGPipeline()
 
 
-def to_chunk_response(chunk) -> RetrievedChunkResponse:
+def to_chunk_response(chunk, source_number: int) -> RetrievedChunkResponse:
     return RetrievedChunkResponse(
+        source_number=source_number,
         chunk_id=chunk.metadata.chunk_id,
         doc_id=chunk.metadata.doc_id,
         title=chunk.metadata.title,
@@ -31,7 +32,10 @@ def retrieve(request: QueryRequest) -> RetrieveResponse:
 
     return RetrieveResponse(
         question=request.question,
-        chunks=[to_chunk_response(chunk) for chunk in chunks],
+        chunks=[
+            to_chunk_response(chunk, source_number=i)
+            for i, chunk in enumerate(chunks, start=1)
+        ],
     )
 
 
@@ -42,5 +46,8 @@ def query(request: QueryRequest) -> QueryResponse:
     return QueryResponse(
         question=request.question,
         answer=answer,
-        sources=[to_chunk_response(chunk) for chunk in chunks],
+        sources=[
+            to_chunk_response(chunk, source_number=i)
+            for i, chunk in enumerate(chunks, start=1)
+        ],
     )

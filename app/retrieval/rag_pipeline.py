@@ -15,11 +15,18 @@ class RAGPipeline:
 
     def retrieve(self, question: str, limit: int = 4) -> List[Chunk]:
         query_vector = self.embedding_client.embed_query(question)
-        results = self.vector_store.search(query_vector=query_vector, limit=limit)
+        raw_results = self.vector_store.search(query_vector=query_vector, limit=limit * 3)
 
         chunks: List[Chunk] = []
-        for result in results:
+        seen_keys = set()
+
+        for result in raw_results:
             payload = result.payload
+
+            dedupe_key = (payload["doc_id"], payload.get("section"))
+            if dedupe_key in seen_keys:
+                continue
+            seen_keys.add(dedupe_key)
 
             chunk = Chunk(
                 metadata=ChunkMetadata(
@@ -37,6 +44,9 @@ class RAGPipeline:
                 content=payload["content"],
             )
             chunks.append(chunk)
+
+            if len(chunks) >= limit:
+                break
 
         return chunks
 

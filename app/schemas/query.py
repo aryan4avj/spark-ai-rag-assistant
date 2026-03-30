@@ -9,6 +9,7 @@ class QueryRequest(BaseModel):
 
 
 class RetrievedChunkResponse(BaseModel):
+    source_number: int
     chunk_id: str
     doc_id: str
     title: str
