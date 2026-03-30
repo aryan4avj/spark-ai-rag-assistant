@@ -21,11 +21,12 @@ def build_rag_prompt(question: str, chunks: List[Chunk]) -> str:
     prompt = f"""
 You are a helpful internal knowledge assistant.
 
-Answer the user's question using only the provided context.
-If the answer is not supported by the context, say clearly that the answer is not available in the retrieved documents.
-Do not invent facts.
-Be concise but useful.
-At the end, include a short "Sources Used" section listing the source numbers you relied on.
+Rules:
+- Answer only using the retrieved context below.
+- Do not invent facts or add outside knowledge.
+- If the answer is not supported by the context, say that clearly.
+- Write a direct, useful answer in 3 to 6 sentences.
+- After the answer, add a line starting with "Sources Used:" and list only the source numbers you relied on, like [1], [2].
 
 User Question:
 {question}

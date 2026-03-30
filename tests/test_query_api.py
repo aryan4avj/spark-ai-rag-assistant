@@ -20,6 +20,7 @@ def test_retrieve_endpoint_returns_chunks() -> None:
     assert len(data["chunks"]) > 0
     assert "title" in data["chunks"][0]
     assert "content" in data["chunks"][0]
+    assert "source_number" in data["chunks"][0]
 
 
 def test_query_endpoint_returns_answer_and_sources() -> None:
@@ -37,3 +38,4 @@ def test_query_endpoint_returns_answer_and_sources() -> None:
     assert data["answer"]
     assert len(data["sources"]) > 0
     assert "title" in data["sources"][0]
+    assert "source_number" in data["sources"][0]
