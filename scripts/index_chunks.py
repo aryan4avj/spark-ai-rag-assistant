@@ -5,7 +5,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from app.embeddings.ollama_client import OllamaEmbeddingClient
+from app.core.providers import get_embedding_client
 from app.ingestion.chunk import chunk_documents
 from app.ingestion.local_files import load_markdown_documents
 from app.vectorstore.qdrant_store import QdrantVectorStore
@@ -19,9 +19,9 @@ if __name__ == "__main__":
     chunks = chunk_documents(documents, max_chars=300, overlap=50)
     print(f"Created {len(chunks)} chunks.")
 
-    embedding_client = OllamaEmbeddingClient()
+    embedding_client = get_embedding_client()
 
-    print("Generating embeddings with Ollama...")
+    print("Generating embeddings...")
     embeddings = embedding_client.embed_texts([chunk.content for chunk in chunks])
 
     vector_size = len(embeddings[0])

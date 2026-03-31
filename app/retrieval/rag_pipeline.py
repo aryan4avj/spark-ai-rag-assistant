@@ -1,7 +1,6 @@
 from typing import List, Tuple
 
-from app.embeddings.ollama_client import OllamaEmbeddingClient
-from app.generation.ollama_chat import OllamaChatClient
+from app.core.providers import get_chat_client, get_embedding_client
 from app.generation.prompts import build_rag_prompt
 from app.schemas.documents import Chunk, ChunkMetadata
 from app.vectorstore.qdrant_store import QdrantVectorStore
@@ -9,8 +8,8 @@ from app.vectorstore.qdrant_store import QdrantVectorStore
 
 class RAGPipeline:
     def __init__(self) -> None:
-        self.embedding_client = OllamaEmbeddingClient()
-        self.chat_client = OllamaChatClient()
+        self.embedding_client = get_embedding_client()
+        self.chat_client = get_chat_client()
         self.vector_store = QdrantVectorStore()
 
     def retrieve(self, question: str, limit: int = 4) -> List[Chunk]:

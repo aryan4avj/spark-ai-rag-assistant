@@ -5,14 +5,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from app.embeddings.ollama_client import OllamaEmbeddingClient
+from app.core.providers import get_embedding_client
 from app.vectorstore.qdrant_store import QdrantVectorStore
 
 
 if __name__ == "__main__":
     query = "How does RAG reduce hallucination?"
 
-    embedding_client = OllamaEmbeddingClient()
+    embedding_client = get_embedding_client()
     vector_store = QdrantVectorStore()
 
     print(f"Query: {query}")
