@@ -10,6 +10,7 @@ load_dotenv()
 class Settings:
     app_env: str = os.getenv("APP_ENV", "local")
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
+    admin_api_key: str = os.getenv("ADMIN_API_KEY", "")
 
     llm_provider: str = os.getenv("LLM_PROVIDER", "ollama")
     embed_provider: str = os.getenv("EMBED_PROVIDER", "ollama")

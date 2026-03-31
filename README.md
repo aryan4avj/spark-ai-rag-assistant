@@ -112,6 +112,7 @@ Example Gemini configuration:
 ```env
 APP_ENV=local
 LOG_LEVEL=INFO
+ADMIN_API_KEY=your_admin_api_key
 
 LLM_PROVIDER=gemini
 EMBED_PROVIDER=gemini
@@ -158,6 +159,7 @@ Useful endpoints:
 - `http://127.0.0.1:8000/health`
 - `http://127.0.0.1:8000/docs`
 - `http://127.0.0.1:8000/query`
+- `http://127.0.0.1:8000/admin/reindex`
 
 ### Run tests locally
 
@@ -244,6 +246,7 @@ The Azure deployment runs on Azure Container Apps with:
 For `spark-ai-api`:
 - `LLM_PROVIDER=gemini`
 - `EMBED_PROVIDER=gemini`
+- `ADMIN_API_KEY=<your-admin-token>`
 - `GEMINI_API_KEY=secretref:gemini-api-key`
 - `QDRANT_URL=http://spark-ai-qdrant:6333`
 - `QDRANT_COLLECTION=spark_ai_docs`
@@ -283,6 +286,13 @@ Run indexing inside the API container:
 
 ```powershell
 az containerapp exec --name spark-ai-api --resource-group rg-spark-ai-demo --command "python scripts/index_chunks.py"
+```
+
+Trigger reindex without shell access:
+
+```powershell
+$headers = @{ "x-admin-api-key" = "<your-admin-token>" }
+Invoke-RestMethod -Uri "https://<api-fqdn>/admin/reindex" -Method Post -Headers $headers
 ```
 
 ## Lessons Learned / Issues Faced
@@ -350,6 +360,10 @@ The repo now separates service-dependent tests using the `integration` marker. T
 - local developer feedback fast
 - CI stable
 - service-dependent failures explicit
+
+### 8. Manual indexing is useful for debugging, but weak operationally
+
+Running `python scripts/index_chunks.py` inside the API container helped debug deployment issues, but it is not a good day-to-day workflow. The `/admin/reindex` endpoint now gives the deployed service a simple protected reindex trigger.
 
 ## Known Limitations
 
