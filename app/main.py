@@ -1,9 +1,14 @@
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 
 from app.api.admin import router as admin_router
 from app.api.health import router as health_router
 from app.api.query import router as query_router
 from app.core.config import settings
+
+FRONTEND_INDEX = Path(__file__).resolve().parents[1] / "frontend" / "index.html"
 
 app = FastAPI(
     title="Spark AI RAG Assistant",
@@ -16,8 +21,5 @@ app.include_router(query_router)
 
 
 @app.get("/")
-def root() -> dict[str, str]:
-    return {
-        "message": "Spark AI RAG Assistant API",
-        "environment": settings.app_env,
-    }
+def root() -> FileResponse:
+    return FileResponse(FRONTEND_INDEX)
