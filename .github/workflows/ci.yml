@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  test:
+  test-and-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,3 +30,7 @@ jobs:
       - name: Run non-integration tests
         run: |
           pytest -m "not integration"
+
+      - name: Build Docker image
+        run: |
+          docker build -f docker/Dockerfile -t spark-ai-rag-assistant:ci .
