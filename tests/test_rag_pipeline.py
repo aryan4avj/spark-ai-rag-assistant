@@ -1,4 +1,8 @@
+import pytest
+
 from app.retrieval.rag_pipeline import RAGPipeline
+
+pytestmark = pytest.mark.integration
 
 
 def test_retrieve_returns_limited_results() -> None:

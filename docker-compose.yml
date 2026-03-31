@@ -1,0 +1,25 @@
+services:
+  qdrant:
+    image: qdrant/qdrant
+    container_name: qdrant-local
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: spark-ai-api
+    depends_on:
+      - qdrant
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: docker
+      LOG_LEVEL: INFO
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_EMBED_MODEL: embeddinggemma
+      OLLAMA_CHAT_MODEL: llama3.2:3b
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION: spark_ai_docs
