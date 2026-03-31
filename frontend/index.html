@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spark AI RAG Assistant</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --panel: #fffaf2;
+      --text: #1e1f1c;
+      --muted: #66665f;
+      --accent: #0f766e;
+      --accent-strong: #115e59;
+      --border: #d8ccb8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top left, #fff9ef 0, transparent 35%),
+        linear-gradient(180deg, #efe5d3 0%, var(--bg) 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 48px 20px 64px;
+    }
+
+    .hero {
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      max-width: 640px;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .panel {
+      background: color-mix(in srgb, var(--panel) 94%, white);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 18px 40px rgba(63, 52, 38, 0.08);
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    label {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 130px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      resize: vertical;
+      font: inherit;
+      background: #fffdf8;
+      color: var(--text);
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      background: var(--accent);
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--accent-strong);
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: wait;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .result {
+      margin-top: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .result-block {
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .result h2 {
+      margin: 0 0 10px;
+      font-size: 1.1rem;
+    }
+
+    .answer {
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+
+    .sources {
+      display: grid;
+      gap: 12px;
+    }
+
+    .source {
+      padding: 14px;
+      border-radius: 14px;
+      background: #fffdf7;
+      border: 1px solid var(--border);
+    }
+
+    .source-title {
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .source-meta {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+    }
+
+    .source-content {
+      color: #2d2e2b;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <h1>Spark AI</h1>
+      <p class="subtitle">Ask a question about the indexed knowledge base and get a grounded answer with source snippets.</p>
+    </section>
+
+    <section class="panel">
+      <form id="query-form">
+        <div>
+          <label for="question">Question</label>
+          <textarea id="question" name="question" placeholder="How does RAG reduce hallucination?">How does RAG reduce hallucination?</textarea>
+        </div>
+
+        <div class="controls">
+          <button id="ask-button" type="submit">Ask</button>
+          <span id="status" class="status">Ready.</span>
+        </div>
+      </form>
+
+      <section id="result" class="result" hidden>
+        <div class="result-block">
+          <h2>Answer</h2>
+          <div id="answer" class="answer"></div>
+        </div>
+
+        <div class="result-block">
+          <h2>Sources</h2>
+          <div id="sources" class="sources"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("query-form");
+    const questionInput = document.getElementById("question");
+    const askButton = document.getElementById("ask-button");
+    const status = document.getElementById("status");
+    const result = document.getElementById("result");
+    const answer = document.getElementById("answer");
+    const sources = document.getElementById("sources");
+
+    function renderSources(items) {
+      sources.innerHTML = "";
+
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "source";
+        empty.textContent = "No sources returned.";
+        sources.appendChild(empty);
+        return;
+      }
+
+      for (const item of items) {
+        const card = document.createElement("article");
+        card.className = "source";
+
+        const title = document.createElement("div");
+        title.className = "source-title";
+        title.textContent = `[${item.source_number}] ${item.title}`;
+
+        const meta = document.createElement("div");
+        meta.className = "source-meta";
+        meta.textContent = [item.space, item.section, item.doc_id].filter(Boolean).join(" | ");
+
+        const content = document.createElement("div");
+        content.className = "source-content";
+        content.textContent = item.content;
+
+        card.appendChild(title);
+        card.appendChild(meta);
+        card.appendChild(content);
+        sources.appendChild(card);
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const question = questionInput.value.trim();
+      if (!question) {
+        status.textContent = "Enter a question first.";
+        return;
+      }
+
+      askButton.disabled = true;
+      status.textContent = "Thinking...";
+      result.hidden = true;
+
+      try {
+        const response = await fetch("/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question, top_k: 4 }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        answer.textContent = data.answer;
+        renderSources(data.sources || []);
+        result.hidden = false;
+        status.textContent = "Done.";
+      } catch (error) {
+        status.textContent = error.message;
+      } finally {
+        askButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
