@@ -10,3 +10,5 @@ httpx
 beautifulsoup4
 markdownify
 google-genai
+langchain
+langgraph
