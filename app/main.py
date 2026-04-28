@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
 from app.api.admin import router as admin_router
+from app.api.agent import router as agent_router
 from app.api.health import router as health_router
 from app.api.query import router as query_router
 from app.core.config import settings
@@ -16,6 +17,7 @@ app = FastAPI(
 )
 
 app.include_router(admin_router)
+app.include_router(agent_router)
 app.include_router(health_router)
 app.include_router(query_router)
 

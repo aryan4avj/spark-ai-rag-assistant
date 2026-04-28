@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class QueryRequest(BaseModel):
@@ -28,3 +28,13 @@ class QueryResponse(BaseModel):
     question: str
     answer: str
     sources: List[RetrievedChunkResponse]
+
+
+class AgentQueryResponse(BaseModel):
+    question: str
+    route: str
+    answer: str
+    sources: List[RetrievedChunkResponse]
+    tool_name: Optional[str] = None
+    tool_result: Optional[str] = None
+    timing_ms: Dict[str, float] = Field(default_factory=dict)
