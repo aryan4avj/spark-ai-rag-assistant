@@ -9,7 +9,8 @@ Build a Spark AI style RAG assistant using public documentation as a Confluence-
 - Do not add heavy abstractions unless requested.
 - Use FastAPI for backend APIs.
 - Use Qdrant for vector storage.
-- Use Mistral for embeddings and answer generation.
+- Use Gemini for hosted embeddings and answer generation.
+- Use Ollama as the local fallback provider path.
 - Preserve metadata for every document chunk.
 - Add tests for all core pipeline steps.
 - Do not change folder structure without explanation.
